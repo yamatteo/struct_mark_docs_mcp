@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass, field
 
 from .exceptions import SectionNotFoundError
+from .validation import to_snake
 
 _HEADING_RE = re.compile(r"^(#{1,3}) (.+)$", re.MULTILINE)
 
@@ -12,14 +13,6 @@ class SectionBlock:
     title: str
     body: str  # starts with \n (MULTILINE $ matches before \n, so m.end() lands on it)
     children: list["SectionBlock"] = field(default_factory=list)
-
-
-def to_snake(title: str) -> str:
-    """Normalise a title to snake_case for path matching.
-
-    Will be imported from validation.py in Phase 2.
-    """
-    return re.sub(r"[^a-zA-Z0-9]+", "_", title).lower().strip("_")[:255]
 
 
 def parse_sections(body: str) -> tuple[str, list[SectionBlock]]:
