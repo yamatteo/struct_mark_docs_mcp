@@ -148,12 +148,12 @@ NEXT_STEPS:
 - [x] Commit: `feat: validation utilities`
 
 ### Phase 3 — ops/list_ops and ops/header_ops
-- [ ] Create `ops/list_ops.py`: `list_files(docs_dir)` → one line per file with wc and abstract status
-- [ ] Create `ops/header_ops.py`: `read_header()`, `sync_header()` (recompute wc, rebuild toc preserving existing abstracts, scan refs links, call `update_back_refs`)
-- [ ] Register `list_files` and `read_header` and `sync_header` tools in `server.py`
-- [ ] Add tests
-- [ ] Run `uv run pytest` and `uv run ruff check`
-- [ ] Commit: `feat: list_files, read_header, sync_header tools`
+- [x] Create `ops/list_ops.py`: `list_files(docs_dir)` → one line per file with wc and abstract status
+- [x] Create `ops/header_ops.py`: `read_header()`, `sync_header()` (recompute wc, rebuild toc preserving existing abstracts, scan refs links, call `update_back_refs`)
+- [x] Register `list_files` and `read_header` and `sync_header` tools in `server.py`
+- [x] Add tests
+- [x] Run `uv run pytest` and `uv run ruff check`
+- [x] Commit: `feat: list_files, read_header, sync_header tools`
 
 ### Phase 4 — ops/abstract_ops
 - [ ] Create `ops/abstract_ops.py`: `update_abstract(docs_dir, config, filename, abstract, section_path=None)` (traverse toc model by snake-path, validate length, write)
