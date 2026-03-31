@@ -142,10 +142,10 @@ NEXT_STEPS:
 - [x] Commit: `feat: frontmatter I/O and section parser`
 
 ### Phase 2 — Validation
-- [ ] Create `validation.py`: `to_snake()`, `validate_snake_filename()`, `check_abstract_length(abstract, level, config)`, `check_no_heading_injection()` (ATX + setext), `check_unique_section_title()`
-- [ ] Add `tests/test_validation.py` (boundary values, injection patterns)
-- [ ] Run `uv run pytest` and `uv run ruff check`
-- [ ] Commit: `feat: validation utilities`
+- [x] Create `validation.py`: `to_snake()`, `validate_snake_filename()`, `check_abstract_length(abstract, level, config)`, `check_no_heading_injection()` (ATX + setext), `check_unique_section_title()`
+- [x] Add `tests/test_validation.py` (boundary values, injection patterns)
+- [x] Run `uv run pytest` and `uv run ruff check`
+- [x] Commit: `feat: validation utilities`
 
 ### Phase 3 — ops/list_ops and ops/header_ops
 - [ ] Create `ops/list_ops.py`: `list_files(docs_dir)` → one line per file with wc and abstract status
