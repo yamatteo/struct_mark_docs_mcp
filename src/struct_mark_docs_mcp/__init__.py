@@ -1,2 +1,6 @@
+from .server import create_server
+
+
 def main() -> None:
-    print("Hello from struct-mark-docs-mcp!")
+    server = create_server()
+    server.run(transport="stdio")
