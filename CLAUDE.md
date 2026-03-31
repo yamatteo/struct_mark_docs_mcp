@@ -126,20 +126,20 @@ NEXT_STEPS:
 
 ### Phase 0 — Project Scaffolding
 - [x] Write CLAUDE.md
-- [ ] Add dependencies to `pyproject.toml`: `mcp>=1.6.0`, `python-frontmatter>=1.1.0`, `pyyaml>=6.0.2`, `pydantic>=2.0`; dev deps: `pytest>=8.0`, `pytest-anyio`, `ruff>=0.4`
-- [ ] Create `exceptions.py`: `DocsMCPError`, `ConfigError`, `FileNotFoundError`, `ValidationError`, `InjectionError`, `SectionNotFoundError`, `DuplicateSectionError`
-- [ ] Create `config.py`: `DocsConfig` Pydantic model + `load_config(docs_dir)` (tries `.struct-mark.yaml` then `struct-mark.yaml`, defaults on missing, raises ConfigError on parse error)
-- [ ] Create `models.py`: `SubsubsectionMeta`, `SubsectionMeta`, `SectionMeta`, `FileFrontmatter` (Pydantic)
-- [ ] Create minimal `server.py`: `AppState` dataclass, `lifespan` reading `MARKDOWN_DOCS_DIR`, `create_server() -> FastMCP`
-- [ ] Update `__init__.py`: `main()` calls `create_server().run(transport="stdio")`
-- [ ] Commit: `feat: bootstrap FastMCP server skeleton`
+- [x] Add dependencies to `pyproject.toml`: `mcp>=1.6.0`, `python-frontmatter>=1.1.0`, `pyyaml>=6.0.2`, `pydantic>=2.0`; dev deps: `pytest>=8.0`, `pytest-anyio`, `ruff>=0.4`
+- [x] Create `exceptions.py`: `DocsMCPError`, `ConfigError`, `FileNotFoundError`, `ValidationError`, `InjectionError`, `SectionNotFoundError`, `DuplicateSectionError`
+- [x] Create `config.py`: `DocsConfig` Pydantic model + `load_config(docs_dir)` (tries `.struct-mark.yaml` then `struct-mark.yaml`, defaults on missing, raises ConfigError on parse error)
+- [x] Create `models.py`: `SubsubsectionMeta`, `SubsectionMeta`, `SectionMeta`, `FileFrontmatter` (Pydantic)
+- [x] Create minimal `server.py`: `AppState` dataclass, `lifespan` reading `MARKDOWN_DOCS_DIR`, `create_server() -> FastMCP`
+- [x] Update `__init__.py`: `main()` calls `create_server().run(transport="stdio")`
+- [x] Commit: `feat: bootstrap FastMCP server skeleton`
 
 ### Phase 1 — Core Parsing Infrastructure
-- [ ] Create `frontmatter_io.py`: `read_file()`, `write_file()` (canonical key order, no sort_keys), `resolve_path()` (path traversal guard)
-- [ ] Create `section_parser.py`: `SectionBlock` dataclass, `parse_sections()` (regex ATX headings levels 1-3), `render_sections()`, `find_section(path)` (snake equivalence), `section_path_to_key()`
-- [ ] Add `tests/test_frontmatter_io.py` and `tests/test_section_parser.py`
-- [ ] Run `uv run pytest` and `uv run ruff check`
-- [ ] Commit: `feat: frontmatter I/O and section parser`
+- [x] Create `frontmatter_io.py`: `read_file()`, `write_file()` (canonical key order, no sort_keys), `resolve_path()` (path traversal guard)
+- [x] Create `section_parser.py`: `SectionBlock` dataclass, `parse_sections()` (regex ATX headings levels 1-3), `render_sections()`, `find_section(path)` (snake equivalence), `section_path_to_key()`
+- [x] Add `tests/test_frontmatter_io.py` and `tests/test_section_parser.py`
+- [x] Run `uv run pytest` and `uv run ruff check`
+- [x] Commit: `feat: frontmatter I/O and section parser`
 
 ### Phase 2 — Validation
 - [ ] Create `validation.py`: `to_snake()`, `validate_snake_filename()`, `check_abstract_length(abstract, level, config)`, `check_no_heading_injection()` (ATX + setext), `check_unique_section_title()`
@@ -194,3 +194,7 @@ NEXT_STEPS:
 - [ ] Add server-level integration tests in `tests/test_server.py`
 - [ ] Run full test suite
 - [ ] Commit: `feat: integration hardening and consistent response format`
+
+### Phase 9 — Documentation
+- [ ] Write `README.md`: installation (`uv add struct-mark-docs-mcp` / `uvx`), quickstart (set `MARKDOWN_DOCS_DIR`, wire into Claude Desktop / MCP client), all config keys with types and defaults, full MCP tool reference (inputs, outputs, example calls), post-modification response format, key invariants (path traversal guard, heading injection, abstract limits)
+- [ ] Commit: `docs: write README with installation, configuration and tool reference`

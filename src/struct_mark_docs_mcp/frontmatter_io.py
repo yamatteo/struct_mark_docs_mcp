@@ -36,4 +36,4 @@ def write_file(docs_dir: Path, filename: str, fm: FileFrontmatter, body: str) ->
         allow_unicode=True,
         default_flow_style=False,
     )
-    path.write_text(f"---\n{yaml_str}---\n\n{body.lstrip(chr(10))}", encoding="utf-8")
+    path.write_text(f"---\n{yaml_str}---\n\n{body.lstrip("\n")}", encoding="utf-8")
