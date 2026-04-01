@@ -189,11 +189,11 @@ NEXT_STEPS:
 - [x] Commit: `feat: get_pending_actions tool`
 
 ### Phase 8 — Integration Hardening
-- [ ] Add `initialise_file()` helper: auto-populate frontmatter for bare `.md` files on first access
-- [ ] Standardise all modifying tool responses to the `ACTION: ... NEXT_STEPS: ...` format
-- [ ] Add server-level integration tests in `tests/test_server.py`
-- [ ] Run full test suite
-- [ ] Commit: `feat: integration hardening and consistent response format`
+- [x] Add `initialise_file()` helper: auto-populate frontmatter for bare `.md` files on first access
+- [x] Standardise all modifying tool responses to the `ACTION: ... NEXT_STEPS: ...` format
+- [x] Add server-level integration tests in `tests/test_server.py`
+- [x] Run full test suite
+- [x] Commit: `feat: integration hardening and consistent response format`
 
 ### Phase 9 — Documentation
 - [ ] Write `README.md`: installation (`uv add struct-mark-docs-mcp` / `uvx`), quickstart (set `MARKDOWN_DOCS_DIR`, wire into Claude Desktop / MCP client), all config keys with types and defaults, full MCP tool reference (inputs, outputs, example calls), post-modification response format, key invariants (path traversal guard, heading injection, abstract limits)

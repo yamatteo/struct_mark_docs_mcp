@@ -68,8 +68,7 @@ def test_write_roundtrip(tmp_path):
         refs=["other_doc"],
         back_refs=[],
     )
-    # python-frontmatter strips trailing newlines on read, so the roundtrip body must not end with \n
-    body = "# Section One\n\nSome content."
+    body = "# Section One\n\nSome content.\n"
     write_file(tmp_path, "round.md", fm, body)
     fm2, body2 = read_file(tmp_path, "round.md")
     assert fm2 == fm
