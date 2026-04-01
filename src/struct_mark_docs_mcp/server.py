@@ -7,6 +7,7 @@ from mcp.server.fastmcp import Context, FastMCP
 
 from .config import DocsConfig, load_config
 from .exceptions import ConfigError
+from .ops.abstract_ops import update_abstract as update_abstract_op
 from .ops.header_ops import read_header as read_header_op
 from .ops.header_ops import sync_header as sync_header_op
 from .ops.list_ops import list_files as list_files_op
@@ -48,5 +49,13 @@ def create_server() -> FastMCP:
         """Recompute wc, rebuild toc, scan refs for a markdown file."""
         state: AppState = ctx.request_context.lifespan_context
         return sync_header_op(state.docs_dir, state.config, filename)
+
+    @mcp.tool()
+    def update_abstract(
+        filename: str, abstract: str, section_path: str | None, ctx: Context
+    ) -> str:
+        """Update the abstract for a file or a section/subsection/subsubsection."""
+        state: AppState = ctx.request_context.lifespan_context
+        return update_abstract_op(state.docs_dir, state.config, filename, abstract, section_path)
 
     return mcp
