@@ -11,6 +11,7 @@ from .ops.abstract_ops import update_abstract as update_abstract_op
 from .ops.header_ops import read_header as read_header_op
 from .ops.header_ops import sync_header as sync_header_op
 from .ops.list_ops import list_files as list_files_op
+from .ops.pending_ops import get_pending_actions as get_pending_actions_op
 from .ops.section_ops import add_section as add_section_op
 from .ops.section_ops import read_section as read_section_op
 from .ops.section_ops import remove_section as remove_section_op
@@ -100,5 +101,11 @@ def create_server() -> FastMCP:
         """Rename a section; check other files for refs to the old title."""
         state: AppState = ctx.request_context.lifespan_context
         return rename_section_op(state.docs_dir, state.config, filename, section_path, new_title)
+
+    @mcp.tool()
+    def get_pending_actions(ctx: Context) -> str:
+        """Emit a prioritised list of pending actions across all files."""
+        state: AppState = ctx.request_context.lifespan_context
+        return get_pending_actions_op(state.docs_dir, state.config)
 
     return mcp

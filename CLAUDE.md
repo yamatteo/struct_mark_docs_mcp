@@ -182,11 +182,11 @@ NEXT_STEPS:
 - [x] Commit: `feat: reference and back-reference management`
 
 ### Phase 7 — ops/pending_ops
-- [ ] Create `ops/pending_ops.py`: `get_pending_actions(docs_dir, config)` — scan all files for empty abstracts, over-limit abstracts, over-limit sections, broken refs, inconsistent back_refs
-- [ ] Register `get_pending_actions` tool in `server.py`
-- [ ] Add `tests/test_ops/test_pending_ops.py`
-- [ ] Run `uv run pytest` and `uv run ruff check`
-- [ ] Commit: `feat: get_pending_actions tool`
+- [x] Create `ops/pending_ops.py`: `get_pending_actions(docs_dir, config)` — scan all files for empty abstracts, over-limit abstracts, over-limit sections, broken refs, inconsistent back_refs
+- [x] Register `get_pending_actions` tool in `server.py`
+- [x] Add `tests/test_ops/test_pending_ops.py`
+- [x] Run `uv run pytest` and `uv run ruff check`
+- [x] Commit: `feat: get_pending_actions tool`
 
 ### Phase 8 — Integration Hardening
 - [ ] Add `initialise_file()` helper: auto-populate frontmatter for bare `.md` files on first access
