@@ -8,6 +8,7 @@ from ..frontmatter_io import read_file, write_file
 from ..models import SectionMeta, SubsectionMeta, SubsubsectionMeta
 from ..section_parser import parse_sections
 from ..validation import to_snake
+from .refs_ops import update_back_refs
 
 _LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+\.md[^)]*)\)")
 
@@ -84,9 +85,11 @@ def sync_header(docs_dir: Path, config: DocsConfig, filename: str) -> str:
     fm.wc = len(body.split())
     old_by_snake = {to_snake(s.title): s for s in fm.toc}
     fm.toc = _build_toc(sections, old_by_snake)
+    old_refs = fm.refs
     fm.refs = scan_refs(body)
 
     write_file(docs_dir, filename, fm, body)
+    update_back_refs(docs_dir, filename, old_refs, fm.refs)
 
     return (
         f"ACTION: synced header for {filename}\n"

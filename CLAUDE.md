@@ -175,11 +175,11 @@ NEXT_STEPS:
 - [x] Commit: `feat: section CRUD tools`
 
 ### Phase 6 — ops/refs_ops
-- [ ] Create `ops/refs_ops.py`: `update_back_refs(docs_dir, referencing_file, old_refs, new_refs)` — diff added/removed, update target files' back_refs; `scan_refs(body)` — regex link detection
-- [ ] Wire into `sync_header` and `write_section`
-- [ ] Add `tests/test_ops/test_refs_ops.py`
-- [ ] Run `uv run pytest` and `uv run ruff check`
-- [ ] Commit: `feat: reference and back-reference management`
+- [x] Create `ops/refs_ops.py`: `update_back_refs(docs_dir, referencing_file, old_refs, new_refs)` — diff added/removed, update target files' back_refs; `scan_refs(body)` — regex link detection
+- [x] Wire into `sync_header` and `write_section`
+- [x] Add `tests/test_ops/test_refs_ops.py`
+- [x] Run `uv run pytest` and `uv run ruff check`
+- [x] Commit: `feat: reference and back-reference management`
 
 ### Phase 7 — ops/pending_ops
 - [ ] Create `ops/pending_ops.py`: `get_pending_actions(docs_dir, config)` — scan all files for empty abstracts, over-limit abstracts, over-limit sections, broken refs, inconsistent back_refs
