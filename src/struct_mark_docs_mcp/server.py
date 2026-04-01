@@ -11,6 +11,11 @@ from .ops.abstract_ops import update_abstract as update_abstract_op
 from .ops.header_ops import read_header as read_header_op
 from .ops.header_ops import sync_header as sync_header_op
 from .ops.list_ops import list_files as list_files_op
+from .ops.section_ops import add_section as add_section_op
+from .ops.section_ops import read_section as read_section_op
+from .ops.section_ops import remove_section as remove_section_op
+from .ops.section_ops import rename_section as rename_section_op
+from .ops.section_ops import write_section as write_section_op
 
 
 @dataclass
@@ -57,5 +62,43 @@ def create_server() -> FastMCP:
         """Update the abstract for a file or a section/subsection/subsubsection."""
         state: AppState = ctx.request_context.lifespan_context
         return update_abstract_op(state.docs_dir, state.config, filename, abstract, section_path)
+
+    @mcp.tool()
+    def read_section(filename: str, section_path: str, ctx: Context) -> str:
+        """Read a section's full content by slash-separated path."""
+        state: AppState = ctx.request_context.lifespan_context
+        return read_section_op(state.docs_dir, filename, section_path)
+
+    @mcp.tool()
+    def write_section(filename: str, section_path: str, content: str, ctx: Context) -> str:
+        """Replace a section's body (children preserved); rejects heading injection."""
+        state: AppState = ctx.request_context.lifespan_context
+        return write_section_op(state.docs_dir, state.config, filename, section_path, content)
+
+    @mcp.tool()
+    def add_section(
+        filename: str,
+        title: str,
+        ctx: Context,
+        parent_path: str | None = None,
+        position: int | None = None,
+    ) -> str:
+        """Add a new section at root or under a parent section."""
+        state: AppState = ctx.request_context.lifespan_context
+        return add_section_op(state.docs_dir, state.config, filename, title, parent_path, position)
+
+    @mcp.tool()
+    def remove_section(filename: str, section_path: str, ctx: Context) -> str:
+        """Remove a section and all its children."""
+        state: AppState = ctx.request_context.lifespan_context
+        return remove_section_op(state.docs_dir, state.config, filename, section_path)
+
+    @mcp.tool()
+    def rename_section(
+        filename: str, section_path: str, new_title: str, ctx: Context
+    ) -> str:
+        """Rename a section; check other files for refs to the old title."""
+        state: AppState = ctx.request_context.lifespan_context
+        return rename_section_op(state.docs_dir, state.config, filename, section_path, new_title)
 
     return mcp

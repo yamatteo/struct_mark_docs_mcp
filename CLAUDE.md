@@ -163,16 +163,16 @@ NEXT_STEPS:
 - [x] Commit: `feat: update_abstract tool`
 
 ### Phase 5 — ops/section_ops
-- [ ] Create `ops/section_ops.py`:
+- [x] Create `ops/section_ops.py`:
   - `read_section(docs_dir, filename, section_path)` — returns heading + body-only slice + children
   - `write_section(docs_dir, config, filename, section_path, content)` — injection check, replace body-only, recompute wc, return NEXT_STEPS
-  - `add_section(docs_dir, config, filename, title, level, parent_path, position)` — uniqueness check, insert, sync toc
-  - `remove_section(docs_dir, filename, section_path)`
+  - `add_section(docs_dir, config, filename, title, parent_path, position)` — uniqueness check, insert, sync toc (level derived from parent_path depth)
+  - `remove_section(docs_dir, config, filename, section_path)`
   - `rename_section(docs_dir, config, filename, section_path, new_title)` — update heading + toc, flag affected files
-- [ ] Register all 5 tools in `server.py`
-- [ ] Add `tests/test_ops/test_section_ops.py`
-- [ ] Run `uv run pytest` and `uv run ruff check`
-- [ ] Commit: `feat: section CRUD tools`
+- [x] Register all 5 tools in `server.py`
+- [x] Add `tests/test_ops/test_section_ops.py`
+- [x] Run `uv run pytest` and `uv run ruff check`
+- [x] Commit: `feat: section CRUD tools`
 
 ### Phase 6 — ops/refs_ops
 - [ ] Create `ops/refs_ops.py`: `update_back_refs(docs_dir, referencing_file, old_refs, new_refs)` — diff added/removed, update target files' back_refs; `scan_refs(body)` — regex link detection
