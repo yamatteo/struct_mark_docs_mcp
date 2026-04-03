@@ -24,15 +24,3 @@ class SectionNotFoundError(DocsMCPError):
 
 class DuplicateSectionError(DocsMCPError):
     """A section with this title already exists at the same level."""
-
-
-class AbstractValidationError(DocsMCPError):
-    """Abstract content fails quality or length validation."""
-
-
-class SectionPathError(DocsMCPError):
-    """Section path is invalid or cannot be resolved."""
-
-
-class TOCSyncError(DocsMCPError):
-    """TOC metadata is inconsistent with file content."""

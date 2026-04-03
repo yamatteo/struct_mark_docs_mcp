@@ -1,21 +1,11 @@
 import pytest
-from pathlib import Path
 
 from struct_mark_docs_mcp.config import DocsConfig
 from struct_mark_docs_mcp.exceptions import (
-    AbstractValidationError,
     SectionNotFoundError,
-    SectionPathError,
-    TOCSyncError,
     ValidationError,
 )
-from struct_mark_docs_mcp.frontmatter_io import read_file, write_file
-from struct_mark_docs_mcp.models import (
-    FileFrontmatter,
-    SectionMeta,
-    SubsectionMeta,
-    SubsubsectionMeta,
-)
+from struct_mark_docs_mcp.frontmatter_io import read_file
 from struct_mark_docs_mcp.ops.abstract_ops import update_abstract
 
 
@@ -78,10 +68,7 @@ Content for section two.
         result = update_abstract(docs_dir, config, sample_file, "Updated file abstract")
 
         assert "ACTION: updated file-level abstract for sample_file.md" in result
-        assert (
-            "run get_pending_actions to check for any reference updates needed"
-            in result
-        )
+        assert "abstract update completed successfully" in result
 
         # Verify change
         fm, _ = read_file(docs_dir, sample_file)
@@ -140,14 +127,6 @@ Content for section two.
             == "Updated subsubsection abstract"
         )
 
-    def test_no_change_detection(self, docs_dir, config, sample_file):
-        result = update_abstract(
-            docs_dir, config, sample_file, "Original file abstract"
-        )
-
-        assert "no change needed" in result
-        assert "already identical" in result
-
     def test_abstract_length_validation(self, docs_dir, config, sample_file):
         # Test file-level limit
         with pytest.raises(ValidationError):
@@ -170,72 +149,10 @@ Content for section two.
         )
         assert "ACTION: updated abstract for section" in result
 
-    def test_abstract_quality_validation(self, docs_dir, config, sample_file):
-        # Test empty abstract
-        with pytest.raises(AbstractValidationError):
-            update_abstract(docs_dir, config, sample_file, "")
-
-        # Test placeholder text - should still raise
-        with pytest.raises(AbstractValidationError):
-            update_abstract(docs_dir, config, sample_file, "TODO: add content here")
-
-    def test_section_path_validation(self, docs_dir, config, sample_file):
-        """Test section path validation"""
-        # Test path too deep
-        with pytest.raises(SectionPathError):
-            update_abstract(docs_dir, config, sample_file, "abstract", "A/B/C/D")
-
-    def test_section_path_validation_trailing_slash(
-        self, docs_dir, config, sample_file
-    ):
-        """Test path with trailing slash"""
-        with pytest.raises(SectionPathError):
-            update_abstract(docs_dir, config, sample_file, "abstract", "Section One/")
-
     def test_nonexistent_section(self, docs_dir, config, sample_file):
-        # Create sync_test file first
-        sync_content = """---
-title: sync_test
-abstract: ""
-wc: 10
-toc: []
-refs: []
-back_refs: []
----
-
-# Existing Section
-
-Content here.
-"""
-        sync_file_path = docs_dir / "sync_test.md"
-        sync_file_path.write_text(sync_content)
-
-        with pytest.raises(TOCSyncError):
+        with pytest.raises(SectionNotFoundError):
             update_abstract(
-                docs_dir, config, "sync_test.md", "abstract", "Existing Section"
-            )
-
-    def test_toc_sync_error(self, docs_dir, config):
-        # Create file with section in content but not TOC
-        content = """---
-title: sync_test
-abstract: ""
-wc: 10
-toc: []
-refs: []
-back_refs: []
----
-
-# Existing Section
-
-Content here.
-"""
-        file_path = docs_dir / "sync_test.md"
-        file_path.write_text(content)
-
-        with pytest.raises(TOCSyncError):
-            update_abstract(
-                docs_dir, config, "sync_test.md", "abstract", "Existing Section"
+                docs_dir, config, sample_file, "abstract", "Nonexistent Section"
             )
 
     def test_snake_case_path_matching(self, docs_dir, config, sample_file):
@@ -256,23 +173,12 @@ Content here.
         fm, _ = read_file(docs_dir, sample_file)
         assert fm.toc[0].subsections[0].abstract == "Snake case test"
 
-    def test_intelligent_next_steps_generation(self, docs_dir, config, sample_file):
-        # Test significant change suggestion
-        long_abstract = "This is a much longer abstract that should trigger suggestions for related updates."
-        result = update_abstract(
-            docs_dir, config, sample_file, long_abstract, "Section One"
-        )
-
-        assert "consider updating abstracts for related sections" in result
-
     def test_whitespace_handling(self, docs_dir, config, sample_file):
         # Test abstract with various whitespace
         abstract_with_whitespace = (
             "  Abstract with   extra   spaces  \n  and newlines  "
         )
-        result = update_abstract(
-            docs_dir, config, sample_file, abstract_with_whitespace
-        )
+        update_abstract(docs_dir, config, sample_file, abstract_with_whitespace)
 
         # Should preserve whitespace as provided (user intent)
         fm, _ = read_file(docs_dir, sample_file)

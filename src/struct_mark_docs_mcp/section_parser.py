@@ -2,7 +2,6 @@ import re
 from dataclasses import dataclass, field
 
 from .exceptions import SectionNotFoundError
-from .models import SectionMeta, SubsectionMeta, SubsubsectionMeta
 from .validation import to_snake
 
 _HEADING_RE = re.compile(r"^(#{1,3}) (.+)$", re.MULTILINE)
@@ -82,88 +81,3 @@ def find_section(sections: list[SectionBlock], path: str) -> SectionBlock:
     if current_block is None:
         raise SectionNotFoundError("Empty section path")
     return current_block
-
-
-def find_toc_section(
-    toc: list[SectionMeta], path: str
-) -> tuple[SectionMeta | SubsectionMeta | SubsubsectionMeta, int]:
-    """Navigate TOC structure by snake-path, return (section, level).
-
-    Args:
-        toc: List of SectionMeta from FileFrontmatter.toc
-        path: Slash-separated display path (e.g., "Introduction/Overview")
-
-    Returns:
-        Tuple of (found_section, level) where level is 1=section, 2=subsection, 3=subsubsection
-
-    Raises:
-        SectionNotFoundError: If path component not found at any level
-    """
-    # Import to_snake here to avoid circular imports
-    from . import to_snake
-
-    parts = [p for p in path.split("/") if p]
-    if not parts:
-        raise SectionNotFoundError("Empty section path")
-
-    current_list = toc
-    current_level = 1
-
-    for i, part in enumerate(parts):
-        if current_level > 3:
-            raise SectionNotFoundError(f"Path too deep: {path}")
-
-        key = to_snake(part)
-        found = None
-
-        if current_level == 1:
-            found = next((s for s in current_list if to_snake(s.title) == key), None)
-            if found:
-                current_list = found.subsections
-        elif current_level == 2:
-            found = next((s for s in current_list if to_snake(s.title) == key), None)
-            if found:
-                current_list = found.subsubsections
-        elif current_level == 3:
-            found = next((s for s in current_list if to_snake(s.title) == key), None)
-
-        if found is None:
-            raise SectionNotFoundError(
-                f"Section {part!r} not found at level {current_level}"
-            )
-
-        current_level += 1
-
-    return found, current_level - 1
-
-
-def update_toc_abstract(
-    toc: list[SectionMeta], path: str, abstract: str
-) -> list[SectionMeta]:
-    """Update abstract in TOC structure, return modified TOC.
-
-    Args:
-        toc: List of SectionMeta from FileFrontmatter.toc
-        path: Slash-separated display path
-        abstract: New abstract content
-
-    Returns:
-        Modified TOC with updated abstract
-
-    Raises:
-        SectionNotFoundError: If path not found
-    """
-    # Create deep copy to avoid mutation issues
-    import copy
-
-    new_toc = copy.deepcopy(toc)
-
-    section, level = find_toc_section(new_toc, path)
-    section.abstract = abstract
-
-    return new_toc
-
-
-def section_path_to_key(path: str) -> list[str]:
-    """Convert a slash-separated display path to a list of snake_case keys."""
-    return [to_snake(p) for p in path.split("/") if p]
