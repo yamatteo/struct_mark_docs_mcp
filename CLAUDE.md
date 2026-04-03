@@ -196,5 +196,5 @@ NEXT_STEPS:
 - [x] Commit: `feat: integration hardening and consistent response format`
 
 ### Phase 9 — Documentation
-- [ ] Write `README.md`: installation (`uv add struct-mark-docs-mcp` / `uvx`), quickstart (set `MARKDOWN_DOCS_DIR`, wire into Claude Desktop / MCP client), all config keys with types and defaults, full MCP tool reference (inputs, outputs, example calls), post-modification response format, key invariants (path traversal guard, heading injection, abstract limits)
-- [ ] Commit: `docs: write README with installation, configuration and tool reference`
+- [x] Write `README.md`: installation (`uv add struct-mark-docs-mcp` / `uvx`), quickstart (set `MARKDOWN_DOCS_DIR`, wire into Claude Desktop / MCP client), all config keys with types and defaults, full MCP tool reference (inputs, outputs, example calls), post-modification response format, key invariants (path traversal guard, heading injection, abstract limits)
+- [x] Commit: `docs: write README with installation, configuration and tool reference`
