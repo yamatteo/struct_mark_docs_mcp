@@ -4,8 +4,13 @@ from ..config import DocsConfig
 from ..exceptions import SectionNotFoundError, ValidationError
 from ..frontmatter_io import read_file, write_file
 from ..section_parser import SectionBlock, find_section, parse_sections, render_sections
-from ..validation import check_no_heading_injection, check_unique_section_title, to_snake
+from ..validation import (
+    check_no_heading_injection,
+    check_unique_section_title,
+    to_snake,
+)
 from .header_ops import sync_header
+from .refs_ops import scan_refs, update_back_refs
 
 
 def read_section(docs_dir: Path, filename: str, section_path: str) -> str:
@@ -30,10 +35,22 @@ def write_section(
     preamble, sections = parse_sections(body)
     block = find_section(sections, section_path)
 
+    # Track old references for back-reference updates
+    old_refs = fm.refs.copy()
+
     stripped = content.strip()
     block.body = ("\n" + stripped + "\n\n") if stripped else "\n"
 
-    write_file(docs_dir, filename, fm, render_sections(preamble, sections))
+    new_body = render_sections(preamble, sections)
+    new_refs = scan_refs(new_body)
+
+    write_file(docs_dir, filename, fm, new_body)
+
+    # Update back-references for any changed references
+    update_back_refs(docs_dir, filename, old_refs, new_refs)
+
+    # Update frontmatter with new references and sync header
+    fm.refs = new_refs
     sync_header(docs_dir, config, filename)
 
     parts = [p for p in section_path.split("/") if p]
@@ -42,11 +59,26 @@ def write_section(
         if len(parts) > 1
         else ""
     )
+
+    # Add reference-related next steps if references changed
+    ref_changes = set(old_refs) ^ set(new_refs)
+    ref_note = ""
+    if ref_changes:
+        added_refs = set(new_refs) - set(old_refs)
+        removed_refs = set(old_refs) - set(new_refs)
+        if added_refs:
+            ref_note += f"  - review newly added references to: {', '.join(sorted(added_refs))}\n"
+        if removed_refs:
+            ref_note += (
+                f"  - review removed references to: {', '.join(sorted(removed_refs))}\n"
+            )
+
     return (
         f"ACTION: replaced body of section {section_path!r} in {filename}\n"
         "NEXT_STEPS:\n"
         f"  - update abstract for section {section_path!r} in {filename}\n"
         + parent_note
+        + ref_note
         + "  - run get_pending_actions to check for remaining tasks"
     )
 
@@ -113,21 +145,38 @@ def remove_section(
         parent_list = parent_block.children
 
     key = to_snake(parts[-1])
-    idx = next(
-        (i for i, b in enumerate(parent_list) if to_snake(b.title) == key), None
-    )
+    idx = next((i for i, b in enumerate(parent_list) if to_snake(b.title) == key), None)
     if idx is None:
         raise SectionNotFoundError(f"Section {parts[-1]!r} not found")
+
+    # Get references in the section to be removed before removing it
+    block_to_remove = parent_list[idx]
+    removed_section_refs = scan_refs(render_sections("", [block_to_remove]))
+
     parent_list.pop(idx)
 
-    write_file(docs_dir, filename, fm, render_sections(preamble, sections))
+    new_body = render_sections(preamble, sections)
+    new_refs = scan_refs(new_body)
+
+    write_file(docs_dir, filename, fm, new_body)
+
+    # Update back-references for removed references
+    update_back_refs(docs_dir, filename, fm.refs, new_refs)
+
+    # Update frontmatter with new references and sync header
+    fm.refs = new_refs
     sync_header(docs_dir, config, filename)
+
+    ref_note = ""
+    if removed_section_refs:
+        ref_note += f"  - review references in removed section: {', '.join(sorted(removed_section_refs))}\n"
 
     return (
         f"ACTION: removed section {section_path!r} from {filename}\n"
         "NEXT_STEPS:\n"
-        "  - review any references to the removed section in other files\n"
-        "  - run get_pending_actions to check for remaining tasks"
+        + ref_note
+        + "  - review any other references to the removed section in other files\n"
+        + "  - run get_pending_actions to check for remaining tasks"
     )
 
 
@@ -156,12 +205,28 @@ def rename_section(
     old_title = block.title
     block.title = new_title
 
-    write_file(docs_dir, filename, fm, render_sections(preamble, sections))
+    new_body = render_sections(preamble, sections)
+    new_refs = scan_refs(new_body)
+
+    write_file(docs_dir, filename, fm, new_body)
+
+    # Update back-references for any changed references
+    update_back_refs(docs_dir, filename, fm.refs, new_refs)
+
+    # Update frontmatter with new references and sync header
+    fm.refs = new_refs
     sync_header(docs_dir, config, filename)
+
+    # Check if old title might be referenced elsewhere
+    old_title_snake = to_snake(old_title)
+    ref_files_note = ""
+    if old_title_snake in [to_snake(ref) for ref in fm.refs]:
+        ref_files_note = f"  - section title {old_title!r} may be referenced in other files and need updating\n"
 
     return (
         f"ACTION: renamed section {old_title!r} → {new_title!r} in {filename}\n"
         "NEXT_STEPS:\n"
-        "  - check other files for references to the old section title\n"
-        "  - run get_pending_actions to check for remaining tasks"
+        + ref_files_note
+        + "  - check other files for references to the old section title\n"
+        + "  - run get_pending_actions to check for remaining tasks"
     )

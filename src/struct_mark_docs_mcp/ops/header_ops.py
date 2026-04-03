@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 
 import yaml
@@ -8,23 +7,7 @@ from ..frontmatter_io import read_file, write_file
 from ..models import SectionMeta, SubsectionMeta, SubsubsectionMeta
 from ..section_parser import parse_sections
 from ..validation import to_snake
-from .refs_ops import update_back_refs
-
-_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+\.md[^)]*)\)")
-
-
-def scan_refs(body: str) -> list[str]:
-    """Extract snake_case stems from .md links in body, deduplicated, order-preserving."""
-    refs: list[str] = []
-    seen: set[str] = set()
-    for m in _LINK_RE.finditer(body):
-        href = m.group(1).split("#")[0].strip()
-        if href.endswith(".md"):
-            key = to_snake(Path(href).stem)
-            if key not in seen:
-                seen.add(key)
-                refs.append(key)
-    return refs
+from .refs_ops import update_back_refs, scan_refs
 
 
 def read_header(docs_dir: Path, filename: str) -> str:
@@ -43,37 +26,49 @@ def _build_toc(sections: list, old_by_snake: dict) -> list[SectionMeta]:
     for sec in sections:
         key = to_snake(sec.title)
         old_sec = old_by_snake.get(key)
-        old_subs = {to_snake(s.title): s for s in old_sec.subsections} if old_sec else {}
+        old_subs = (
+            {to_snake(s.title): s for s in old_sec.subsections} if old_sec else {}
+        )
 
         new_subs = []
         for sub in sec.children:
             sub_key = to_snake(sub.title)
             old_sub = old_subs.get(sub_key)
-            old_subsubs = {to_snake(s.title): s for s in old_sub.subsubsections} if old_sub else {}
+            old_subsubs = (
+                {to_snake(s.title): s for s in old_sub.subsubsections}
+                if old_sub
+                else {}
+            )
 
             new_subsubs = []
             for subsub in sub.children:
                 subsub_key = to_snake(subsub.title)
                 old_subsub = old_subsubs.get(subsub_key)
-                new_subsubs.append(SubsubsectionMeta(
-                    title=subsub.title,
-                    abstract=old_subsub.abstract if old_subsub else "",
-                    wc=len(subsub.body.split()),
-                ))
+                new_subsubs.append(
+                    SubsubsectionMeta(
+                        title=subsub.title,
+                        abstract=old_subsub.abstract if old_subsub else "",
+                        wc=len(subsub.body.split()),
+                    )
+                )
 
-            new_subs.append(SubsectionMeta(
-                title=sub.title,
-                abstract=old_sub.abstract if old_sub else "",
-                wc=len(sub.body.split()),
-                subsubsections=new_subsubs,
-            ))
+            new_subs.append(
+                SubsectionMeta(
+                    title=sub.title,
+                    abstract=old_sub.abstract if old_sub else "",
+                    wc=len(sub.body.split()),
+                    subsubsections=new_subsubs,
+                )
+            )
 
-        result.append(SectionMeta(
-            title=sec.title,
-            abstract=old_sec.abstract if old_sec else "",
-            wc=len(sec.body.split()),
-            subsections=new_subs,
-        ))
+        result.append(
+            SectionMeta(
+                title=sec.title,
+                abstract=old_sec.abstract if old_sec else "",
+                wc=len(sec.body.split()),
+                subsections=new_subs,
+            )
+        )
     return result
 
 

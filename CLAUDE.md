@@ -175,25 +175,25 @@ NEXT_STEPS:
 - [x] Commit: `feat: section CRUD tools`
 
 ### Phase 6 — ops/refs_ops
-- [x] Create `ops/refs_ops.py`: `update_back_refs(docs_dir, referencing_file, old_refs, new_refs)` — diff added/removed, update target files' back_refs; `scan_refs(body)` — regex link detection
-- [x] Wire into `sync_header` and `write_section`
-- [x] Add `tests/test_ops/test_refs_ops.py`
-- [x] Run `uv run pytest` and `uv run ruff check`
-- [x] Commit: `feat: reference and back-reference management`
+- [ ] Create `ops/refs_ops.py`: `update_back_refs(docs_dir, referencing_file, old_refs, new_refs)` — diff added/removed, update target files' back_refs; `scan_refs(body)` — regex link detection
+- [ ] Wire into `sync_header` and `write_section`
+- [ ] Add `tests/test_ops/test_refs_ops.py`
+- [ ] Run `uv run pytest` and `uv run ruff check`
+- [ ] Commit: `feat: reference and back-reference management`
 
 ### Phase 7 — ops/pending_ops
-- [x] Create `ops/pending_ops.py`: `get_pending_actions(docs_dir, config)` — scan all files for empty abstracts, over-limit abstracts, over-limit sections, broken refs, inconsistent back_refs
-- [x] Register `get_pending_actions` tool in `server.py`
-- [x] Add `tests/test_ops/test_pending_ops.py`
-- [x] Run `uv run pytest` and `uv run ruff check`
-- [x] Commit: `feat: get_pending_actions tool`
+- [ ] Create `ops/pending_ops.py`: `get_pending_actions(docs_dir, config)` — scan all files for empty abstracts, over-limit abstracts, over-limit sections, broken refs, inconsistent back_refs
+- [ ] Register `get_pending_actions` tool in `server.py`
+- [ ] Add `tests/test_ops/test_pending_ops.py`
+- [ ] Run `uv run pytest` and `uv run ruff check`
+- [ ] Commit: `feat: get_pending_actions tool`
 
 ### Phase 8 — Integration Hardening
-- [x] Add `initialise_file()` helper: auto-populate frontmatter for bare `.md` files on first access
-- [x] Standardise all modifying tool responses to the `ACTION: ... NEXT_STEPS: ...` format
-- [x] Add server-level integration tests in `tests/test_server.py`
-- [x] Run full test suite
-- [x] Commit: `feat: integration hardening and consistent response format`
+- [ ] Add `initialise_file()` helper: auto-populate frontmatter for bare `.md` files on first access
+- [ ] Standardise all modifying tool responses to the `ACTION: ... NEXT_STEPS: ...` format
+- [ ] Add server-level integration tests in `tests/test_server.py`
+- [ ] Run full test suite
+- [ ] Commit: `feat: integration hardening and consistent response format`
 
 ### Phase 9 — Documentation
 - [ ] Write `README.md`: installation (`uv add struct-mark-docs-mcp` / `uvx`), quickstart (set `MARKDOWN_DOCS_DIR`, wire into Claude Desktop / MCP client), all config keys with types and defaults, full MCP tool reference (inputs, outputs, example calls), post-modification response format, key invariants (path traversal guard, heading injection, abstract limits)

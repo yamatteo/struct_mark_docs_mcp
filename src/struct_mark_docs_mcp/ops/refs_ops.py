@@ -1,7 +1,24 @@
+import re
 from pathlib import Path
 
 from ..frontmatter_io import read_file, write_file
 from ..validation import to_snake
+
+_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+\.md[^)]*)\)")
+
+
+def scan_refs(body: str) -> list[str]:
+    """Extract snake_case stems from .md links in body, deduplicated, order-preserving."""
+    refs: list[str] = []
+    seen: set[str] = set()
+    for m in _LINK_RE.finditer(body):
+        href = m.group(1).split("#")[0].strip()
+        if href.endswith(".md"):
+            key = to_snake(Path(href).stem)
+            if key not in seen:
+                seen.add(key)
+                refs.append(key)
+    return refs
 
 
 def update_back_refs(
