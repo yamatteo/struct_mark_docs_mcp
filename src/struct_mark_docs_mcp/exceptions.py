@@ -19,8 +19,20 @@ class InjectionError(DocsMCPError):
 
 
 class SectionNotFoundError(DocsMCPError):
-    """Section path does not match any section in the file."""
+    """Section path does not match any section in file."""
 
 
 class DuplicateSectionError(DocsMCPError):
     """A section with this title already exists at the same level."""
+
+
+class AbstractValidationError(DocsMCPError):
+    """Abstract content fails quality or length validation."""
+
+
+class SectionPathError(DocsMCPError):
+    """Section path is invalid or cannot be resolved."""
+
+
+class TOCSyncError(DocsMCPError):
+    """TOC metadata is inconsistent with file content."""

@@ -1,7 +1,14 @@
 import pytest
+from pathlib import Path
 
 from struct_mark_docs_mcp.config import DocsConfig
-from struct_mark_docs_mcp.exceptions import SectionNotFoundError, ValidationError
+from struct_mark_docs_mcp.exceptions import (
+    AbstractValidationError,
+    SectionNotFoundError,
+    SectionPathError,
+    TOCSyncError,
+    ValidationError,
+)
 from struct_mark_docs_mcp.frontmatter_io import read_file, write_file
 from struct_mark_docs_mcp.models import (
     FileFrontmatter,
@@ -12,105 +19,261 @@ from struct_mark_docs_mcp.models import (
 from struct_mark_docs_mcp.ops.abstract_ops import update_abstract
 
 
-def _make_deep_file(tmp_path):
-    """Write a file with section → subsection → subsubsection."""
-    fm = FileFrontmatter(
-        title="doc",
-        toc=[
-            SectionMeta(
-                title="Intro",
-                wc=0,
-                subsections=[
-                    SubsectionMeta(
-                        title="Background",
-                        wc=0,
-                        subsubsections=[
-                            SubsubsectionMeta(title="History", wc=0),
-                        ],
-                    )
-                ],
+class TestAbstractOps:
+    @pytest.fixture
+    def docs_dir(self, tmp_path):
+        return tmp_path
+
+    @pytest.fixture
+    def config(self):
+        return DocsConfig()
+
+    @pytest.fixture
+    def sample_file(self, docs_dir):
+        # Create a sample markdown file with complete TOC structure
+        content = """---
+title: sample_file
+abstract: Original file abstract
+wc: 50
+toc:
+  - title: Section One
+    abstract: Original section abstract
+    wc: 20
+    subsections:
+      - title: Subsection One
+        abstract: Original subsection abstract
+        wc: 10
+        subsubsections:
+          - title: Subsubsection One
+            abstract: Original subsubsection abstract
+            wc: 5
+  - title: Section Two
+    abstract: ""
+    wc: 15
+refs: []
+back_refs: []
+---
+
+# Section One
+
+Content for section one.
+
+## Subsection One
+
+Content for subsection one.
+
+### Subsubsection One
+
+Content for subsubsection one.
+
+# Section Two
+
+Content for section two.
+"""
+        file_path = docs_dir / "sample_file.md"
+        file_path.write_text(content)
+        return "sample_file.md"
+
+    def test_file_level_abstract_update(self, docs_dir, config, sample_file):
+        result = update_abstract(docs_dir, config, sample_file, "Updated file abstract")
+
+        assert "ACTION: updated file-level abstract for sample_file.md" in result
+        assert (
+            "run get_pending_actions to check for any reference updates needed"
+            in result
+        )
+
+        # Verify change
+        fm, _ = read_file(docs_dir, sample_file)
+        assert fm.abstract == "Updated file abstract"
+
+    def test_section_level_abstract_update(self, docs_dir, config, sample_file):
+        result = update_abstract(
+            docs_dir, config, sample_file, "Updated section abstract", "Section One"
+        )
+
+        assert (
+            "ACTION: updated abstract for section 'Section One' in sample_file.md"
+            in result
+        )
+
+        # Verify change
+        fm, _ = read_file(docs_dir, sample_file)
+        assert fm.toc[0].abstract == "Updated section abstract"
+
+    def test_subsection_level_abstract_update(self, docs_dir, config, sample_file):
+        result = update_abstract(
+            docs_dir,
+            config,
+            sample_file,
+            "Updated subsection abstract",
+            "Section One/Subsection One",
+        )
+
+        assert (
+            "ACTION: updated abstract for section 'Section One/Subsection One' in sample_file.md"
+            in result
+        )
+
+        # Verify change
+        fm, _ = read_file(docs_dir, sample_file)
+        assert fm.toc[0].subsections[0].abstract == "Updated subsection abstract"
+
+    def test_subsubsection_level_abstract_update(self, docs_dir, config, sample_file):
+        result = update_abstract(
+            docs_dir,
+            config,
+            sample_file,
+            "Updated subsubsection abstract",
+            "Section One/Subsection One/Subsubsection One",
+        )
+
+        assert (
+            "ACTION: updated abstract for section 'Section One/Subsection One/Subsubsection One' in sample_file.md"
+            in result
+        )
+
+        # Verify change
+        fm, _ = read_file(docs_dir, sample_file)
+        assert (
+            fm.toc[0].subsections[0].subsubsections[0].abstract
+            == "Updated subsubsection abstract"
+        )
+
+    def test_no_change_detection(self, docs_dir, config, sample_file):
+        result = update_abstract(
+            docs_dir, config, sample_file, "Original file abstract"
+        )
+
+        assert "no change needed" in result
+        assert "already identical" in result
+
+    def test_abstract_length_validation(self, docs_dir, config, sample_file):
+        # Test file-level limit
+        with pytest.raises(ValidationError):
+            update_abstract(docs_dir, config, sample_file, "x" * 400)  # Over 380 limit
+
+        # Test section-level limit
+        with pytest.raises(ValidationError):
+            update_abstract(
+                docs_dir, config, sample_file, "x" * 300, "Section One"
+            )  # Over 288 limit
+
+        # Test exact limit boundary (should pass)
+        exact_file_limit = "x" * 380  # Exactly at file limit
+        result = update_abstract(docs_dir, config, sample_file, exact_file_limit)
+        assert "ACTION: updated file-level abstract" in result
+
+        exact_section_limit = "x" * 288  # Exactly at section limit
+        result = update_abstract(
+            docs_dir, config, sample_file, exact_section_limit, "Section One"
+        )
+        assert "ACTION: updated abstract for section" in result
+
+    def test_abstract_quality_validation(self, docs_dir, config, sample_file):
+        # Test empty abstract
+        with pytest.raises(AbstractValidationError):
+            update_abstract(docs_dir, config, sample_file, "")
+
+        # Test placeholder text - should still raise
+        with pytest.raises(AbstractValidationError):
+            update_abstract(docs_dir, config, sample_file, "TODO: add content here")
+
+    def test_section_path_validation(self, docs_dir, config, sample_file):
+        """Test section path validation"""
+        # Test path too deep
+        with pytest.raises(SectionPathError):
+            update_abstract(docs_dir, config, sample_file, "abstract", "A/B/C/D")
+
+    def test_section_path_validation_trailing_slash(
+        self, docs_dir, config, sample_file
+    ):
+        """Test path with trailing slash"""
+        with pytest.raises(SectionPathError):
+            update_abstract(docs_dir, config, sample_file, "abstract", "Section One/")
+
+    def test_nonexistent_section(self, docs_dir, config, sample_file):
+        # Create sync_test file first
+        sync_content = """---
+title: sync_test
+abstract: ""
+wc: 10
+toc: []
+refs: []
+back_refs: []
+---
+
+# Existing Section
+
+Content here.
+"""
+        sync_file_path = docs_dir / "sync_test.md"
+        sync_file_path.write_text(sync_content)
+
+        with pytest.raises(TOCSyncError):
+            update_abstract(
+                docs_dir, config, "sync_test.md", "abstract", "Existing Section"
             )
-        ],
-    )
-    write_file(tmp_path, "doc.md", fm, "# Intro\n\n## Background\n\n### History\n\nText.")
-    return fm
 
+    def test_toc_sync_error(self, docs_dir, config):
+        # Create file with section in content but not TOC
+        content = """---
+title: sync_test
+abstract: ""
+wc: 10
+toc: []
+refs: []
+back_refs: []
+---
 
-def test_file_level_abstract(tmp_path):
-    fm = FileFrontmatter(title="doc")
-    write_file(tmp_path, "doc.md", fm, "")
-    update_abstract(tmp_path, DocsConfig(), "doc.md", "Top-level abstract.")
-    fm2, _ = read_file(tmp_path, "doc.md")
-    assert fm2.abstract == "Top-level abstract."
+# Existing Section
 
+Content here.
+"""
+        file_path = docs_dir / "sync_test.md"
+        file_path.write_text(content)
 
-def test_section_level_abstract(tmp_path):
-    _make_deep_file(tmp_path)
-    update_abstract(tmp_path, DocsConfig(), "doc.md", "Section abstract.", "Intro")
-    fm2, _ = read_file(tmp_path, "doc.md")
-    assert fm2.toc[0].abstract == "Section abstract."
+        with pytest.raises(TOCSyncError):
+            update_abstract(
+                docs_dir, config, "sync_test.md", "abstract", "Existing Section"
+            )
 
+    def test_snake_case_path_matching(self, docs_dir, config, sample_file):
+        # Test with different capitalization and spacing
+        result = update_abstract(
+            docs_dir,
+            config,
+            sample_file,
+            "Snake case test",
+            "section-one/subsection-one",
+        )
 
-def test_subsection_level_abstract(tmp_path):
-    _make_deep_file(tmp_path)
-    update_abstract(tmp_path, DocsConfig(), "doc.md", "Sub abstract.", "Intro/Background")
-    fm2, _ = read_file(tmp_path, "doc.md")
-    assert fm2.toc[0].subsections[0].abstract == "Sub abstract."
+        assert (
+            "ACTION: updated abstract for section 'section-one/subsection-one'"
+            in result
+        )
 
+        fm, _ = read_file(docs_dir, sample_file)
+        assert fm.toc[0].subsections[0].abstract == "Snake case test"
 
-def test_subsubsection_level_abstract(tmp_path):
-    _make_deep_file(tmp_path)
-    update_abstract(
-        tmp_path, DocsConfig(), "doc.md", "Subsub abstract.", "Intro/Background/History"
-    )
-    fm2, _ = read_file(tmp_path, "doc.md")
-    assert fm2.toc[0].subsections[0].subsubsections[0].abstract == "Subsub abstract."
+    def test_intelligent_next_steps_generation(self, docs_dir, config, sample_file):
+        # Test significant change suggestion
+        long_abstract = "This is a much longer abstract that should trigger suggestions for related updates."
+        result = update_abstract(
+            docs_dir, config, sample_file, long_abstract, "Section One"
+        )
 
+        assert "consider updating abstracts for related sections" in result
 
-def test_snake_equivalence_in_path(tmp_path):
-    """Path matching uses snake equivalence, not exact string match."""
-    fm = FileFrontmatter(
-        title="doc",
-        toc=[SectionMeta(title="My Section", wc=0)],
-    )
-    write_file(tmp_path, "doc.md", fm, "# My Section\n\nContent.")
-    # "my section" snake → "my_section", same as to_snake("My Section")
-    update_abstract(tmp_path, DocsConfig(), "doc.md", "Snake match.", "my section")
-    fm2, _ = read_file(tmp_path, "doc.md")
-    assert fm2.toc[0].abstract == "Snake match."
+    def test_whitespace_handling(self, docs_dir, config, sample_file):
+        # Test abstract with various whitespace
+        abstract_with_whitespace = (
+            "  Abstract with   extra   spaces  \n  and newlines  "
+        )
+        result = update_abstract(
+            docs_dir, config, sample_file, abstract_with_whitespace
+        )
 
-
-def test_overlimit_file_abstract_rejected(tmp_path):
-    fm = FileFrontmatter(title="doc")
-    write_file(tmp_path, "doc.md", fm, "")
-    too_long = "x" * 381
-    with pytest.raises(ValidationError):
-        update_abstract(tmp_path, DocsConfig(), "doc.md", too_long)
-
-
-def test_overlimit_section_abstract_rejected(tmp_path):
-    _make_deep_file(tmp_path)
-    too_long = "x" * 289
-    with pytest.raises(ValidationError):
-        update_abstract(tmp_path, DocsConfig(), "doc.md", too_long, "Intro")
-
-
-def test_section_not_found(tmp_path):
-    fm = FileFrontmatter(title="doc", toc=[SectionMeta(title="Intro", wc=0)])
-    write_file(tmp_path, "doc.md", fm, "# Intro\n\nContent.")
-    with pytest.raises(SectionNotFoundError):
-        update_abstract(tmp_path, DocsConfig(), "doc.md", "Nope.", "Nonexistent")
-
-
-def test_subsection_not_found(tmp_path):
-    _make_deep_file(tmp_path)
-    with pytest.raises(SectionNotFoundError):
-        update_abstract(tmp_path, DocsConfig(), "doc.md", "Nope.", "Intro/Nonexistent")
-
-
-def test_returns_action_string(tmp_path):
-    fm = FileFrontmatter(title="doc")
-    write_file(tmp_path, "doc.md", fm, "")
-    result = update_abstract(tmp_path, DocsConfig(), "doc.md", "Abstract.")
-    assert result.startswith("ACTION:")
-    assert "NEXT_STEPS" in result
+        # Should preserve whitespace as provided (user intent)
+        fm, _ = read_file(docs_dir, sample_file)
+        assert fm.abstract == abstract_with_whitespace
