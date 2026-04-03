@@ -1,0 +1,25 @@
+# Configuration for structured markdown documentation MCP
+description: "Test documentation set with rich structure and inter-references"
+index_file: "_index.md"
+content_directory: "./content"
+
+# Limits for abstracts and content
+limits:
+  abstract:
+    max_characters: 380
+  section:
+    max_abstract_characters: 288
+  subsection:
+    max_abstract_characters: 204
+  subsubsection:
+    max_abstract_characters: 128
+
+# File naming and structure rules
+file_naming:
+  max_length: 255
+  invalid_chars_replacement: "_"
+
+# Additional settings
+auto_update_references: true
+validate_structure: true
+track_word_counts: true
