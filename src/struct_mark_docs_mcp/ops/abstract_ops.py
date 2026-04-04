@@ -48,8 +48,9 @@ def update_abstract(
         _, sections = parse_sections(body)
         find_section(sections, section_path)  # Verify section exists
 
-        # Determine level from section path depth
-        level = len(section_path.split("/"))
+        # Determine level from section path depth, filtering empty strings
+        path_parts = [p.strip() for p in section_path.split("/") if p.strip()]
+        level = len(path_parts)
         check_abstract_length(abstract, level, config)
 
         # Find and update the corresponding TOC entry using inline traversal
@@ -78,7 +79,6 @@ def update_abstract(
                         return toc_list
             return toc_list
 
-        path_parts = [p.strip() for p in section_path.split("/") if p.strip()]
         fm.toc = update_toc_recursive(fm.toc, path_parts)
 
         action = f"updated abstract for section '{section_path}' in {filename}"

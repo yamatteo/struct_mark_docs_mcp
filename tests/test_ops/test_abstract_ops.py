@@ -183,3 +183,38 @@ Content for section two.
         # Should preserve whitespace as provided (user intent)
         fm, _ = read_file(docs_dir, sample_file)
         assert fm.abstract == abstract_with_whitespace
+
+    def test_leading_trailing_slashes_level_calculation(self, docs_dir, config, sample_file):
+        """Test that level calculation correctly filters empty strings from slashes"""
+        
+        # Test leading and trailing slashes: "/Section One/" should be level 1, not 3
+        result = update_abstract(
+            docs_dir, config, sample_file, "Test abstract", "/Section One/"
+        )
+        assert "ACTION: updated abstract for section '/Section One/'" in result
+        fm, _ = read_file(docs_dir, sample_file)
+        assert fm.toc[0].abstract == "Test abstract"
+        
+        # Test trailing slash only: "Section One/" should be level 1
+        result = update_abstract(
+            docs_dir, config, sample_file, "Test abstract 2", "Section One/"
+        )
+        assert "ACTION: updated abstract for section 'Section One/'" in result
+        fm, _ = read_file(docs_dir, sample_file)
+        assert fm.toc[0].abstract == "Test abstract 2"
+        
+        # Test leading slash only: "/Section One" should be level 1
+        result = update_abstract(
+            docs_dir, config, sample_file, "Test abstract 3", "/Section One"
+        )
+        assert "ACTION: updated abstract for section '/Section One'" in result
+        fm, _ = read_file(docs_dir, sample_file)
+        assert fm.toc[0].abstract == "Test abstract 3"
+        
+        # Test no slashes: "Section One" should be level 1 (baseline)
+        result = update_abstract(
+            docs_dir, config, sample_file, "Test abstract 4", "Section One"
+        )
+        assert "ACTION: updated abstract for section 'Section One'" in result
+        fm, _ = read_file(docs_dir, sample_file)
+        assert fm.toc[0].abstract == "Test abstract 4"
