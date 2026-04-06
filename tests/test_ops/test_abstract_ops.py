@@ -218,3 +218,40 @@ Content for section two.
         assert "ACTION: updated abstract for section 'Section One'" in result
         fm, _ = read_file(docs_dir, sample_file)
         assert fm.toc[0].abstract == "Test abstract 4"
+
+    def test_out_of_sync_empty_subsections_list(self, docs_dir, config, sample_file):
+        """Test updating subsection abstract when parent has empty subsections list in TOC"""
+        # First, modify the file to have empty subsections list in TOC but subsection exists in body
+        fm, body = read_file(docs_dir, sample_file)
+        
+        # Clear the subsections list in TOC but keep the subsection in the body
+        fm.toc[0].subsections = []
+        from struct_mark_docs_mcp.frontmatter_io import write_file
+        write_file(docs_dir, sample_file, fm, body)
+        
+        # Now try to update the subsection abstract - this should succeed with the fix
+        # because the section exists in the body (find_section passes), but the TOC
+        # traversal should attempt the recursive call even with empty list
+        result = update_abstract(
+            docs_dir,
+            config,
+            sample_file,
+            "Updated subsection abstract in out-of-sync TOC",
+            "Section One/Subsection One",
+        )
+        
+        # Should succeed because section exists in body
+        assert (
+            "ACTION: updated abstract for section 'Section One/Subsection One' in sample_file.md"
+            in result
+        )
+        
+        # Verify the TOC model remains empty (no change) because there was nothing to traverse
+        fm_updated, body_updated = read_file(docs_dir, sample_file)
+        assert len(fm_updated.toc[0].subsections) == 0
+        
+        # But the section should still exist in the body (find_section would still find it)
+        from struct_mark_docs_mcp.section_parser import parse_sections, find_section
+        _, sections = parse_sections(body_updated)
+        subsection = find_section(sections, "Section One/Subsection One")
+        assert subsection.title == "Subsection One"

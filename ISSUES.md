@@ -4,58 +4,6 @@ This file lists all identified gaps, bugs, and improvements found by comparing t
 
 Each task is self-contained and can be executed independently unless a dependency is noted.
 
----
-
-## ISSUE-01 — Level calculation in `update_abstract` is broken for paths with leading/trailing slashes
-
-**File**: `src/struct_mark_docs_mcp/ops/abstract_ops.py:52`
-
-**Problem**: The abstract validation level is computed as:
-```python
-level = len(section_path.split("/"))
-```
-This does **not** filter empty strings produced by leading or trailing slashes.  
-For example `"/Introduction/"` produces `len(["", "Introduction", ""]) = 3` (subsubsection limit),  
-but the path has only one real component so the correct level is 1 (section limit).  
-The path filtering at line 81 **does** filter empties correctly, making the two computations inconsistent.
-
-**Fix**: Replace the level calculation with:
-```python
-path_parts = [p.strip() for p in section_path.split("/") if p.strip()]
-level = len(path_parts)
-```
-and then reuse `path_parts` at line 81 instead of splitting again.
-
-**Tests to add**: `tests/test_ops/test_abstract_ops.py` — test `update_abstract` with paths like `"/Introduction/"`, `"Introduction/"`, `"/Introduction"`.
-
----
-
-## ISSUE-02 — `update_toc_recursive` silently skips update when subsection list in TOC is empty
-
-**File**: `src/struct_mark_docs_mcp/ops/abstract_ops.py:70-77`
-
-**Problem**: The traversal condition is:
-```python
-if hasattr(item, "subsections") and item.subsections:     # falsy when list is []
-    ...
-elif hasattr(item, "subsubsections") and item.subsubsections:  # falsy when list is []
-    ...
-return toc_list   # silently returns without updating anything
-```
-If `sync_header` has not been called after adding a subsection (so it exists in the body but the TOC model still has `subsections=[]`), calling `update_abstract` on that subsection will silently succeed (return `ACTION: ...`) while the abstract is never written.
-
-**Fix**: Always attempt deeper traversal regardless of whether the child list is empty. Change the conditions to check only `hasattr` (not truthiness):
-```python
-if hasattr(item, "subsections"):
-    item.subsections = update_toc_recursive(item.subsections, path_parts[1:])
-elif hasattr(item, "subsubsections"):
-    item.subsubsections = update_toc_recursive(item.subsubsections, path_parts[1:])
-```
-If the child list is empty the recursive call will find nothing and the operation will naturally fall through without updating — this is the correct behavior.
-
-**Tests to add**: `tests/test_ops/test_abstract_ops.py` — test updating a subsection abstract when the parent section has an empty `subsections` list in its TOC model (out-of-sync scenario).
-
----
 
 ## ISSUE-03 — `update_back_refs` is called twice in `write_section`, `remove_section`, and `rename_section`
 

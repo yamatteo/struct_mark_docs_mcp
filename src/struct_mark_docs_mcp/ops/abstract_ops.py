@@ -68,11 +68,11 @@ def update_abstract(
                         item.abstract = abstract
                         return toc_list
                     else:
-                        if hasattr(item, "subsections") and item.subsections:
+                        if hasattr(item, "subsections"):
                             item.subsections = update_toc_recursive(
                                 item.subsections, path_parts[1:]
                             )
-                        elif hasattr(item, "subsubsections") and item.subsubsections:
+                        elif hasattr(item, "subsubsections"):
                             item.subsubsections = update_toc_recursive(
                                 item.subsubsections, path_parts[1:]
                             )
