@@ -4,17 +4,6 @@ This file lists all identified gaps, bugs, and improvements found by comparing t
 
 Each task is self-contained and can be executed independently unless a dependency is noted.
 
-## ISSUE-08 — Subdirectory scanning not implemented (ORIGINAL_PROMPT requirement)
-
-**Files**: `src/struct_mark_docs_mcp/ops/list_ops.py:18`, `ops/pending_ops.py:19`, `ops/refs_ops.py:35`
-
-**Problem**: `ORIGINAL_PROMPT.md` states: "the server will be started from the docs root and will be able to access, read and modify only markdown file in that directory **or its subdirectories**." All three ops files use `docs_dir.glob("*.md")`, which only matches files in the root and ignores subdirectories.
-
-**Fix**: Replace `docs_dir.glob("*.md")` with `docs_dir.rglob("*.md")` in all three files. Verify path-related operations (e.g. ref key generation from `f.stem`) still work correctly when files are in subdirectories (the stem approach is fine; it may however produce key collisions if two files in different subdirectories share the same stem — that edge case should be documented).
-
-**Note**: All read/write operations in `frontmatter_io.py` already use `resolve_path()` which supports subdirectory paths. Only the discovery/listing functions need updating. After the change, update `list_files` to show relative paths (e.g. `subdir/file.md`) rather than bare filenames so the caller can distinguish files in different subdirectories.
-
----
 
 ## ISSUE-09 — `validate_snake_filename` is never called when files are accessed
 
