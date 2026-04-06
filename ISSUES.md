@@ -5,46 +5,6 @@ This file lists all identified gaps, bugs, and improvements found by comparing t
 Each task is self-contained and can be executed independently unless a dependency is noted.
 
 
-## ISSUE-04 — README example passes a heading into `write_section` content (would throw InjectionError)
-
-**File**: `README.md:262-264`
-
-**Problem**: The "Example Workflow" section shows:
-```
-write_section(filename="guide.md", section_path="Getting Started", content="# Getting Started
-
-This is the getting started section...")
-```
-The `content` string starts with `# Getting Started`, which is an ATX heading. `write_section` calls `check_no_heading_injection` and would raise an `InjectionError` on this input. The example is misleading and wrong.
-
-**Fix**: Remove the heading line from the example content so it reads:
-```
-write_section(filename="guide.md", section_path="Getting Started",
-              content="This is the getting started section with detailed instructions...")
-```
-
----
-
-## ISSUE-05 — README installation shows `uv install` (invalid command)
-
-**File**: `README.md:31`
-
-**Problem**: The "Manual installation" block shows `uv install`, which is not a valid `uv` command. The correct command is `uv sync`.
-
-**Fix**: Replace `uv install` with `uv sync`.
-
----
-
-## ISSUE-06 — README has placeholder text in License and Contributing sections
-
-**File**: `README.md:291-295`
-
-**Problem**: Both the License and Contributing sections contain `[Add your license information here]` and `[Add contribution guidelines here]` placeholder text. A published README should not have unfilled placeholders.
-
-**Fix**: Choose and state a license (the project currently has no `LICENSE` file either). A minimal acceptable fix is to add `MIT` or `Apache 2.0` and create a `LICENSE` file, or to remove those sections entirely until the author decides.
-
----
-
 ## ISSUE-07 — `update_abstract` returns a trivial NEXT_STEPS that violates the spec
 
 **File**: `src/struct_mark_docs_mcp/ops/abstract_ops.py:89`

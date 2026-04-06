@@ -28,7 +28,7 @@ uvx struct-mark-docs-mcp
 ```bash
 git clone https://github.com/yamatteo/struct-mark-docs-mcp
 cd struct-mark-docs-mcp
-uv install
+uv sync
 ```
 
 ## Quickstart
@@ -259,9 +259,7 @@ get_pending_actions
 add_section(filename="guide.md", title="Getting Started")
 
 # 4. Write section content
-write_section(filename="guide.md", section_path="Getting Started", content="# Getting Started
-
-This is the getting started section with detailed instructions...")
+write_section(filename="guide.md", section_path="Getting Started", content="This is the getting started section with detailed instructions...")
 
 # 5. Update the abstract
 update_abstract(filename="guide.md", section_path="Getting Started", abstract="Quick start guide for new users")
@@ -290,8 +288,8 @@ uv run pytest && uv run ruff check
 
 ## License
 
-[Add your license information here]
+MIT
 
 ## Contributing
 
-[Add contribution guidelines here]
+Use github issues.
