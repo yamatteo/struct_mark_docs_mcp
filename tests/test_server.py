@@ -1,6 +1,8 @@
+import pytest
 from mcp.server.fastmcp import FastMCP
 
 from struct_mark_docs_mcp.config import DocsConfig
+from struct_mark_docs_mcp.exceptions import ValidationError
 from struct_mark_docs_mcp.frontmatter_io import read_file, write_file
 from struct_mark_docs_mcp.models import FileFrontmatter
 from struct_mark_docs_mcp.ops.header_ops import sync_header
@@ -43,9 +45,8 @@ def test_bare_file_with_spaces_in_stem(tmp_path):
     bare = tmp_path / "My Doc.md"
     bare.write_text("Content.\n", encoding="utf-8")
 
-    fm, _ = read_file(tmp_path, "My Doc.md")
-
-    assert fm.title == "my_doc"
+    with pytest.raises(ValidationError):
+        read_file(tmp_path, "My Doc.md")
 
 
 def test_bare_file_list_files_auto_inits(tmp_path):

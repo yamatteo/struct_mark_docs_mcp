@@ -5,10 +5,12 @@ import yaml
 
 from .exceptions import DocsFileNotFoundError
 from .models import FileFrontmatter
+from .validation import validate_snake_filename
 
 
 def resolve_path(docs_dir: Path, filename: str) -> Path:
     """Resolve filename relative to docs_dir, raising if outside the directory."""
+    validate_snake_filename(filename)
     path = (docs_dir / filename).resolve()
     if not path.is_relative_to(docs_dir.resolve()):
         raise DocsFileNotFoundError(f"{filename!r} is outside the docs directory")

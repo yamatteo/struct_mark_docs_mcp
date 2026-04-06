@@ -4,17 +4,6 @@ This file lists all identified gaps, bugs, and improvements found by comparing t
 
 Each task is self-contained and can be executed independently unless a dependency is noted.
 
-
-## ISSUE-09 — `validate_snake_filename` is never called when files are accessed
-
-**File**: `src/struct_mark_docs_mcp/validation.py:19-25`, `frontmatter_io.py`
-
-**Problem**: `validate_snake_filename` exists and is exported, but it is not called anywhere in the codebase — neither in `read_file`, `write_file`, nor in any tool handler. Per `ORIGINAL_PROMPT.md`: "titles that can't be file name will be escaped … duplicate titles will be refused". Currently any filename (including ones that would fail the snake_case check) is accepted silently.
-
-**Fix**: Call `validate_snake_filename(filename)` inside `resolve_path()` (or at the top of `read_file` / `write_file`) so invalid filenames are rejected early. Add a test that passes a non-snake filename and expects a `ValidationError`.
-
----
-
 ## ISSUE-10 — `sync_header` word-count counts frontmatter words in some edge cases
 
 **File**: `src/struct_mark_docs_mcp/ops/header_ops.py:80`

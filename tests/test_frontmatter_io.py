@@ -1,6 +1,6 @@
 import pytest
 
-from struct_mark_docs_mcp.exceptions import DocsFileNotFoundError
+from struct_mark_docs_mcp.exceptions import DocsFileNotFoundError, ValidationError
 from struct_mark_docs_mcp.frontmatter_io import read_file, resolve_path, write_file
 from struct_mark_docs_mcp.models import FileFrontmatter, SectionMeta
 
@@ -73,3 +73,40 @@ def test_write_roundtrip(tmp_path):
     fm2, body2 = read_file(tmp_path, "round.md")
     assert fm2 == fm
     assert body2 == body
+
+
+# ---------------------------------------------------------------------------
+# Snake case filename validation tests
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_path_rejects_camel_case(tmp_path):
+    with pytest.raises(ValidationError):
+        resolve_path(tmp_path, "MyFile.md")
+
+
+def test_resolve_path_rejects_spaces(tmp_path):
+    with pytest.raises(ValidationError):
+        resolve_path(tmp_path, "my file.md")
+
+
+def test_resolve_path_rejects_empty_stem(tmp_path):
+    with pytest.raises(ValidationError):
+        resolve_path(tmp_path, ".md")
+
+
+def test_resolve_path_accepts_snake_case(tmp_path):
+    path = resolve_path(tmp_path, "my_file.md")
+    assert path == (tmp_path / "my_file.md").resolve()
+
+
+def test_read_file_rejects_invalid_filename(tmp_path):
+    (tmp_path / "MyFile.md").write_text("# Content\n\nSome text.\n", encoding="utf-8")
+    with pytest.raises(ValidationError):
+        read_file(tmp_path, "MyFile.md")
+
+
+def test_write_file_rejects_invalid_filename(tmp_path):
+    fm = FileFrontmatter(title="Test", abstract="Test abstract.", wc=5)
+    with pytest.raises(ValidationError):
+        write_file(tmp_path, "Bad File.md", fm, "Content")
