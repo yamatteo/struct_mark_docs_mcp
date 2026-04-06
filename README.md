@@ -11,6 +11,26 @@ An MCP (Model Context Protocol) server for managing structured markdown document
 - **Pending actions**: Scan all files for missing abstracts, over-limit content, and broken references
 - **Bare file initialization**: Automatically adds frontmatter to plain markdown files
 
+## Bare File Initialization
+
+When a `.md` file without YAML frontmatter is accessed for the first time, the system automatically creates minimal frontmatter to make it compatible with the structured documentation system.
+
+**What triggers initialization**: Any read operation on a bare `.md` file (one without YAML frontmatter) will automatically add frontmatter.
+
+**Default frontmatter structure**:
+```yaml
+title: snake_case_filename
+abstract: ""
+wc: 0
+toc: []
+refs: []
+back_refs: []
+```
+
+**Title normalization**: The filename is converted to snake_case using the pattern `re.sub(r'[^a-zA-Z0-9]+', '_', title).lower().strip('_')[:255]` to ensure consistent naming and reference handling.
+
+**User impact**: The file is modified in-place during the first access. If you prefer to manage frontmatter manually, ensure your `.md` files include YAML frontmatter before accessing them through the MCP tools.
+
 ## Installation
 
 ### With uv (recommended)
