@@ -86,4 +86,16 @@ def update_abstract(
     # Write updated file
     write_file(docs_dir, filename, fm, body)
 
-    return f"ACTION: {action}\nNEXT_STEPS:\n  - abstract update completed successfully"
+    # Generate context-aware next steps
+    if section_path is None:
+        next_steps = "  - run get_pending_actions to check for remaining tasks"
+    else:
+        parts = [p.strip() for p in section_path.split("/") if p.strip()]
+        parent = "/".join(parts[:-1])
+        parent_note = (
+            f"  - update abstract for '{parent}' in {filename}\n" if parent
+            else f"  - update file-level abstract for {filename}\n"
+        )
+        next_steps = parent_note + "  - run get_pending_actions to check for remaining tasks"
+
+    return f"ACTION: {action}\nNEXT_STEPS:\n{next_steps}"

@@ -68,7 +68,7 @@ Content for section two.
         result = update_abstract(docs_dir, config, sample_file, "Updated file abstract")
 
         assert "ACTION: updated file-level abstract for sample_file.md" in result
-        assert "abstract update completed successfully" in result
+        assert "run get_pending_actions to check for remaining tasks" in result
 
         # Verify change
         fm, _ = read_file(docs_dir, sample_file)
@@ -83,6 +83,9 @@ Content for section two.
             "ACTION: updated abstract for section 'Section One' in sample_file.md"
             in result
         )
+        # Should suggest updating file-level abstract for top-level section
+        assert "update file-level abstract for sample_file.md" in result
+        assert "run get_pending_actions to check for remaining tasks" in result
 
         # Verify change
         fm, _ = read_file(docs_dir, sample_file)
@@ -101,6 +104,9 @@ Content for section two.
             "ACTION: updated abstract for section 'Section One/Subsection One' in sample_file.md"
             in result
         )
+        # Should suggest updating parent section
+        assert "update abstract for 'Section One' in sample_file.md" in result
+        assert "run get_pending_actions to check for remaining tasks" in result
 
         # Verify change
         fm, _ = read_file(docs_dir, sample_file)
