@@ -5,18 +5,6 @@ This file lists all identified gaps, bugs, and improvements found by comparing t
 Each task is self-contained and can be executed independently unless a dependency is noted.
 
 
-## ISSUE-03 — `update_back_refs` is called twice in `write_section`, `remove_section`, and `rename_section`
-
-**Files**: `src/struct_mark_docs_mcp/ops/section_ops.py:50,54` / `164,168` / `214,218`
-
-**Problem**: Each of those three functions first calls `update_back_refs(old_refs, new_refs)` directly, then immediately calls `sync_header()`. `sync_header` also calls `update_back_refs(old_refs_from_disk, new_refs_from_scan)` — effectively with the same arguments. The second call is a no-op due to idempotency guards, but it triggers unnecessary file I/O (reading and writing every referenced file a second time).
-
-**Fix**: Remove the explicit `update_back_refs` call from `write_section`, `remove_section`, and `rename_section` and let `sync_header` do it as part of its normal flow. The three functions should simply call `sync_header` after writing; they should not call `update_back_refs` themselves.
-
-**Note**: Verify no test relies on the order (back_refs update before or after sync). After the fix `sync_header` remains the single source of truth for ref/back_ref consistency.
-
----
-
 ## ISSUE-04 — README example passes a heading into `write_section` content (would throw InjectionError)
 
 **File**: `README.md:262-264`

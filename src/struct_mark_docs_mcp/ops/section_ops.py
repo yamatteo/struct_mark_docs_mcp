@@ -10,7 +10,7 @@ from ..validation import (
     to_snake,
 )
 from .header_ops import sync_header
-from .refs_ops import scan_refs, update_back_refs
+from .refs_ops import scan_refs
 
 
 def read_section(docs_dir: Path, filename: str, section_path: str) -> str:
@@ -45,9 +45,6 @@ def write_section(
     new_refs = scan_refs(new_body)
 
     write_file(docs_dir, filename, fm, new_body)
-
-    # Update back-references for any changed references
-    update_back_refs(docs_dir, filename, old_refs, new_refs)
 
     # Update frontmatter with new references and sync header
     fm.refs = new_refs
@@ -160,9 +157,6 @@ def remove_section(
 
     write_file(docs_dir, filename, fm, new_body)
 
-    # Update back-references for removed references
-    update_back_refs(docs_dir, filename, fm.refs, new_refs)
-
     # Update frontmatter with new references and sync header
     fm.refs = new_refs
     sync_header(docs_dir, config, filename)
@@ -209,9 +203,6 @@ def rename_section(
     new_refs = scan_refs(new_body)
 
     write_file(docs_dir, filename, fm, new_body)
-
-    # Update back-references for any changed references
-    update_back_refs(docs_dir, filename, fm.refs, new_refs)
 
     # Update frontmatter with new references and sync header
     fm.refs = new_refs
