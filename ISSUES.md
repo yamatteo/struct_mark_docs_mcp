@@ -4,19 +4,6 @@ This file lists all identified gaps, bugs, and improvements found by comparing t
 
 Each task is self-contained and can be executed independently unless a dependency is noted.
 
-## ISSUE-10 — `sync_header` word-count counts frontmatter words in some edge cases
-
-**File**: `src/struct_mark_docs_mcp/ops/header_ops.py:80`
-
-**Problem**: The body passed to `sync_header` is obtained via `read_file` which correctly strips frontmatter (`post.content` from `python-frontmatter`). However, `fm.wc = len(body.split())` counts words in the body. Individual section `wc` fields in `_build_toc` are computed from `sec.body.split()` which is the body text between headings — **excluding** child sections. This means the file-level `wc` and section-level `wc` are not comparable: the file `wc` is the total body word count (all sections combined), while section `wc` is only the direct body text (not children). This inconsistency is not documented.
-
-**Fix** (or document): Either:
-- Document in code and README that `wc` at the section level counts only the direct body of that section (not nested subsections), while the file-level `wc` counts everything.
-- Or change `_build_toc` to compute `wc` as the sum of the direct body plus all nested children — but this would require a recursive count.
-
-A pure documentation fix (adding a comment to `_build_toc` and the README) is acceptable if the current behaviour is intentional.
-
----
 
 ## ISSUE-11 — `initialise_file` does not validate that the filename is snake_case
 

@@ -92,22 +92,22 @@ All managed markdown files have YAML frontmatter:
 title: snake_case_filename
 abstract: |
   File-level abstract (max 380 chars).
-wc: 240
+wc: 240  # Total word count of entire file body (all sections combined)
 toc:
   - title: Section Title
     abstract: |
       Section abstract (max 288 chars).
-    wc: 150
+    wc: 150  # Word count of section's direct body only (excludes subsections)
     subsections:
       - title: Subsection Title
         abstract: |
           Subsection abstract (max 204 chars).
-        wc: 70
+        wc: 70  # Word count of subsection's direct body only (excludes subsubsections)
         subsubsections:
           - title: Subsubsection Title
             abstract: |
               Subsubsection abstract (max 128 chars).
-            wc: 20
+            wc: 20  # Word count of subsubsection's direct body only
 refs:
   - other_file_snake_title
 back_refs:
@@ -245,6 +245,11 @@ NEXT_STEPS:
 ### Section Levels
 - Only levels 1-3 (`#`, `##`, `###`) are managed as structural elements
 - Deeper levels are treated as body content within sections
+
+### Word Count Behavior
+- File-level `wc` counts total word count of entire file body (all sections combined)
+- Section-level `wc` counts only the direct body text of that section, excluding nested subsections
+- This means file `wc` ≠ sum of all section `wc` values (this is intentional behavior)
 
 ## Example Workflow
 

@@ -22,6 +22,13 @@ def read_header(docs_dir: Path, filename: str) -> str:
 
 
 def _build_toc(sections: list, old_by_snake: dict) -> list[SectionMeta]:
+    """Build table of contents with word counts.
+    
+    NOTE: Section-level wc counts ONLY the direct body text of that section,
+    excluding nested subsections. This is intentional - file-level wc counts
+    the total body text (all sections combined), while section-level wc counts
+    only the immediate content of that section.
+    """
     result = []
     for sec in sections:
         key = to_snake(sec.title)
@@ -73,7 +80,11 @@ def _build_toc(sections: list, old_by_snake: dict) -> list[SectionMeta]:
 
 
 def sync_header(docs_dir: Path, config: DocsConfig, filename: str) -> str:
-    """Recompute wc, rebuild toc (preserving abstracts), scan refs, write file."""
+    """Recompute wc, rebuild toc (preserving abstracts), scan refs, write file.
+    
+    NOTE: file.wc counts total body text (all sections), while section.wc
+    counts only direct body text of that section (excluding children).
+    """
     fm, body = read_file(docs_dir, filename)
     _, sections = parse_sections(body)
 
