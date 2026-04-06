@@ -16,18 +16,20 @@ An MCP (Model Context Protocol) server for managing structured markdown document
 ### With uv (recommended)
 
 ```bash
-# Add to your project
-uv add struct-mark-docs-mcp
+# Clone and install from source
+git clone https://github.com/yamatteo/struct_mark_docs_mcp
+cd struct_mark_docs_mcp
+uv sync
 
-# Or run directly with uvx
-uvx struct-mark-docs-mcp
+# Or add to your project from source
+uv add git+https://github.com/yamatteo/struct_mark_docs_mcp
 ```
 
 ### Manual installation
 
 ```bash
-git clone https://github.com/yamatteo/struct-mark-docs-mcp
-cd struct-mark-docs-mcp
+git clone https://github.com/yamatteo/struct_mark_docs_mcp
+cd struct_mark_docs_mcp
 uv sync
 ```
 
@@ -49,7 +51,7 @@ uv sync
      "mcpServers": {
        "struct-mark-docs": {
          "command": "uvx",
-         "args": ["struct-mark-docs-mcp"],
+         "args": ["git+https://github.com/yamatteo/struct_mark_docs_mcp"],
          "env": {
            "MARKDOWN_DOCS_DIR": "/path/to/your/docs"
          }
