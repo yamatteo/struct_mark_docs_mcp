@@ -16,9 +16,9 @@ _PRIORITY = {
 
 def get_pending_actions(docs_dir: Path, config: DocsConfig) -> str:
     """Scan all .md files and emit a prioritised list of pending actions."""
-    md_files = sorted(docs_dir.glob("*.md"), key=lambda f: f.name)
-    key_to_name = {to_snake(f.stem): f.name for f in md_files}
-    file_data = {f.name: read_file(docs_dir, f.name)[0] for f in md_files}
+    md_files = sorted(docs_dir.rglob("*.md"), key=lambda f: f.relative_to(docs_dir))
+    key_to_name = {to_snake(f.stem): str(f.relative_to(docs_dir)) for f in md_files}
+    file_data = {str(f.relative_to(docs_dir)): read_file(docs_dir, str(f.relative_to(docs_dir)))[0] for f in md_files}
 
     actions: list[tuple[str, str]] = []
 

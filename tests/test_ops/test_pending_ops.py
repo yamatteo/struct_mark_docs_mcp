@@ -117,3 +117,25 @@ def test_nested_toc_all_levels_checked(tmp_path):
     result = get_pending_actions(tmp_path, DocsConfig())
     assert "Sec/Sub" in result
     assert "Sec/Sub/Subsub" in result
+
+
+def test_pending_actions_subdirectories(tmp_path):
+    # Create subdirectories and files
+    subdir = tmp_path / "guides"
+    subdir.mkdir()
+    
+    # Create files in different locations
+    fm_root = FileFrontmatter(title="root_doc", abstract="", wc=10)  # missing abstract
+    fm_sub = FileFrontmatter(title="guide_doc", abstract="Guide abstract", wc=5)
+    
+    write_file(tmp_path, "root_doc.md", fm_root, "Root content")
+    write_file(tmp_path, "guides/guide_doc.md", fm_sub, "Guide content")
+    
+    result = get_pending_actions(tmp_path, DocsConfig())
+    
+    # Check that files in subdirectories are processed
+    assert "write abstract for root_doc.md" in result
+    # The subdirectory file should not appear in pending actions since it has an abstract
+    # but it should be discovered (no errors about missing files)
+    assert "guides/guide_doc.md" not in result  # No pending actions for this file
+    assert "write abstract for" not in result.split("root_doc.md")[1]  # Only root_doc needs abstract

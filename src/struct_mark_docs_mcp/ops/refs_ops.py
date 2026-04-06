@@ -32,7 +32,10 @@ def update_back_refs(
     added = set(new_refs) - set(old_refs)
     removed = set(old_refs) - set(new_refs)
 
-    key_to_name = {to_snake(f.stem): f.name for f in docs_dir.glob("*.md")}
+    # NOTE: Files in different subdirectories with the same stem will produce the same key.
+    # This is a known edge case - the ref system uses snake_case stems as keys,
+    # so "docs/intro.md" and "guides/intro.md" will both have key "intro".
+    key_to_name = {to_snake(f.stem): str(f.relative_to(docs_dir)) for f in docs_dir.rglob("*.md")}
 
     for ref_key in added:
         target_name = key_to_name.get(ref_key)

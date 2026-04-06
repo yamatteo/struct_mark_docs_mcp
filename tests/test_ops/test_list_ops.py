@@ -39,3 +39,34 @@ def test_list_files_multiple_sorted(tmp_path):
     lines = list_files(tmp_path, DocsConfig()).splitlines()
     assert lines[0].startswith("alpha.md")
     assert lines[1].startswith("bravo.md")
+
+
+def test_list_files_subdirectories(tmp_path):
+    # Create subdirectories and files
+    subdir = tmp_path / "subdir"
+    nested = tmp_path / "subdir" / "nested"
+    subdir.mkdir()
+    nested.mkdir()
+    
+    # Create files in different locations
+    fm_root = FileFrontmatter(title="root_doc", abstract="Root abstract", wc=10)
+    fm_sub = FileFrontmatter(title="sub_doc", abstract="Sub abstract", wc=5)
+    fm_nested = FileFrontmatter(title="nested_doc", abstract="Nested abstract", wc=3)
+    
+    write_file(tmp_path, "root_doc.md", fm_root, "Root content")
+    write_file(tmp_path, "subdir/sub_doc.md", fm_sub, "Sub content")
+    write_file(tmp_path, "subdir/nested/nested_doc.md", fm_nested, "Nested content")
+    
+    result = list_files(tmp_path, DocsConfig())
+    lines = result.splitlines()
+    
+    # Check that all files are found with relative paths
+    assert "root_doc.md" in result
+    assert "subdir/sub_doc.md" in result
+    assert "subdir/nested/nested_doc.md" in result
+    
+    # Check word counts and abstract status
+    assert "wc=10" in lines[0]  # root_doc.md
+    assert "wc=5" in result
+    assert "wc=3" in result
+    assert "abstract=ok" in result
